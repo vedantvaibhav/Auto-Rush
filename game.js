@@ -1,6 +1,6 @@
 // Game constants
-const BASE_CANVAS_WIDTH = 900;
-const BASE_CANVAS_HEIGHT = 500;
+const BASE_CANVAS_WIDTH = 850;
+const BASE_CANVAS_HEIGHT = 400;
 const GRAVITY = 1;                     // Keep current gravity
 const SLIDE_FORCE = -10;                // Keep current upward force
 const BASE_DOWNWARD_SLIDE_FORCE = 0.5;  // Base downward slide force
@@ -156,17 +156,13 @@ function resizeCanvas() {
         scale = Math.min(scaleX, scaleY);
     }
     
-    // Calculate the new canvas dimensions that maintain aspect ratio
-    const newWidth = BASE_CANVAS_WIDTH * scale;
-    const newHeight = BASE_CANVAS_HEIGHT * scale;
-    
     // Set canvas size to match container but with higher resolution for sharper rendering
     canvas.width = BASE_CANVAS_WIDTH * 2;  // Double the resolution
     canvas.height = BASE_CANVAS_HEIGHT * 2;
     
-    // Scale the canvas display size to fill the container height
-    canvas.style.width = `${containerHeight * (BASE_CANVAS_WIDTH / BASE_CANVAS_HEIGHT)}px`;
-    canvas.style.height = `${containerHeight}px`;
+    // Set canvas display size to exactly match BASE_CANVAS_WIDTH
+    canvas.style.width = `${BASE_CANVAS_WIDTH}px`;
+    canvas.style.height = `${BASE_CANVAS_HEIGHT}px`;
     
     // Center the canvas in the container
     canvas.style.margin = 'auto';
@@ -238,8 +234,8 @@ document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
 
 // Add keyboard controls for desktop
 document.addEventListener('keydown', (e) => {
-    // Prevent default space bar behavior
-    if (e.code === 'Space') {
+    // Check for spacebar using multiple properties for maximum compatibility
+    if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
         e.preventDefault();
         if (showStartScreen) {
             startGame();
@@ -252,15 +248,16 @@ document.addEventListener('keydown', (e) => {
             resetGame();
         }
     }
-    // Use P key exclusively for pause
-    if (e.code === 'KeyP') {
+    // Use P key exclusively for pause with multiple checks
+    if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.keyCode === 80) {
         e.preventDefault();
         togglePause();
     }
 });
 
 document.addEventListener('keyup', (e) => {
-    if (e.code === 'Space') {
+    // Check for spacebar using multiple properties for maximum compatibility
+    if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
         e.preventDefault();
         player.isSliding = false;
     }
@@ -288,12 +285,16 @@ function togglePause() {
     const pauseButton = document.getElementById('pauseButton');
     if (isPaused) {
         pauseButton.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
+                <title>Play icon</title>
+                <desc>A play triangle representing resume</desc>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M6.00468 2.10188C6.01365 2.10786 6.02265 2.11386 6.03167 2.11987L13.9432 7.39424C14.1721 7.54682 14.3844 7.68829 14.5474 7.81976C14.7175 7.95696 14.9181 8.14722 15.0335 8.42555C15.1861 8.79343 15.1861 9.20688 15.0335 9.57475C14.9181 9.85308 14.7175 10.0433 14.5474 10.1805C14.3844 10.312 14.1722 10.4535 13.9433 10.606L6.00471 15.8984C5.7249 16.085 5.47329 16.2527 5.25979 16.3684C5.04614 16.4842 4.75288 16.6165 4.4106 16.5961C3.97279 16.57 3.56834 16.3535 3.30374 16.0037C3.09687 15.7303 3.04429 15.4129 3.02211 15.1709C2.99996 14.9291 2.99998 14.6267 3 14.2904L3 3.74237C3 3.73153 3 3.72071 3 3.70994C2.99998 3.37364 2.99996 3.07124 3.02211 2.82943C3.04429 2.58743 3.09687 2.27004 3.30374 1.99658C3.56834 1.6468 3.97279 1.43035 4.4106 1.4042C4.75288 1.38377 5.04614 1.51608 5.25979 1.63186C5.47328 1.74756 5.72488 1.91532 6.00468 2.10188Z" fill="white"/>
             </svg>`;
     } else {
         pauseButton.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
+                <title>Pause icon</title>
+                <desc>Two vertical bars representing pause</desc>
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0.75C4.44365 0.75 0.75 4.44365 0.75 9C0.75 13.5563 4.44365 17.25 9 17.25C13.5563 17.25 17.25 13.5563 17.25 9C17.25 4.44365 13.5563 0.75 9 0.75ZM7.875 6.75C7.875 6.33579 7.53921 6 7.125 6C6.71079 6 6.375 6.33579 6.375 6.75V11.25C6.375 11.6642 6.71079 12 7.125 12C7.53921 12 7.875 11.6642 7.875 11.25V6.75ZM11.625 6.75C11.625 6.33579 11.2892 6 10.875 6C10.4608 6 10.125 6.33579 10.125 6.75V11.25C10.125 11.6642 10.4608 12 10.875 12C11.2892 12 11.625 11.6642 11.625 11.25V6.75Z" fill="white"/>
             </svg>`;
     }
@@ -541,14 +542,14 @@ function update() {
 }
 
 function draw() {
-    // Clear canvas
+    // Clear canvas with a single fill operation
     ctx.fillStyle = '#8ED4A0';
     ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
 
-    // Save the context state before drawing game elements
+    // Save the context state before any transformations
     ctx.save();
     
-    // Draw with crisp edges for game elements
+    // Enable image smoothing for better quality
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
@@ -578,21 +579,21 @@ function draw() {
         // Show pick ride button and hide pause button
         document.querySelector('.pick-ride-button').style.display = 'block';
         document.getElementById('pauseButton').style.visibility = 'hidden';
-        return; // Exit draw function early
+        ctx.restore();
+        return;
     }
 
-    // Draw particles with viewport offset
+    // Apply viewport offset for all game elements
+    ctx.translate(-viewportOffset.x, -viewportOffset.y);
+
+    // Draw particles
     particles.forEach(particle => {
-        ctx.save();
-        ctx.translate(-viewportOffset.x, -viewportOffset.y);
         particle.draw(ctx);
-        ctx.restore();
     });
 
     // Draw player with rotation and error handling
     if (vehicleImg.complete && vehicleImg.naturalWidth !== 0) {
         ctx.save();
-        ctx.translate(-viewportOffset.x, -viewportOffset.y);
         ctx.translate(player.x + player.width/2, player.y + player.height/2);
         ctx.rotate(player.rotation * Math.PI / 180);
         
@@ -605,20 +606,16 @@ function draw() {
             vehicleDimensions.width,
             vehicleDimensions.height
         );
-        
         ctx.restore();
     } else {
         ctx.save();
-        ctx.translate(-viewportOffset.x, -viewportOffset.y);
         ctx.fillStyle = '#225D31';
         ctx.fillRect(player.x, player.y, player.width, player.height);
         ctx.restore();
     }
 
-    // Draw obstacles with error handling and viewport offset
+    // Draw obstacles with error handling
     obstacles.forEach(obstacle => {
-        ctx.save();
-        ctx.translate(-viewportOffset.x, -viewportOffset.y);
         const img = obstacleImages[obstacle.imageIndex];
         if (img && img.complete && img.naturalWidth !== 0) {
             ctx.drawImage(img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
@@ -626,13 +623,12 @@ function draw() {
             ctx.fillStyle = '#225D31';
             ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         }
-        ctx.restore();
     });
 
-    // Restore the context state
+    // Restore the context state after drawing all game elements
     ctx.restore();
 
-    // Draw score and other UI elements with mobile-specific positioning
+    // Draw UI elements (score, game over, pause screen)
     const isMobile = window.innerWidth <= 768;
     ctx.font = '500 14px Quicksand';
     ctx.fillStyle = '#225D31';
@@ -641,16 +637,14 @@ function draw() {
     const scoreText = `Score: ${score}`;
     const scoreMetrics = ctx.measureText(scoreText);
     const scoreX = isMobile ? (BASE_CANVAS_WIDTH - scoreMetrics.width) / 2 : 20;
-    const scoreY = 24; // Set fixed 24px padding from top for both mobile and desktop
+    const scoreY = 24;
     ctx.fillText(scoreText, scoreX, scoreY);
 
-    // Draw game over with overlay
+    // Draw game over screen
     if (gameOver) {
-        // Add semi-transparent overlay
         ctx.fillStyle = 'rgba(142, 212, 160, 0.7)';
         ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
         
-        // Draw game over text
         ctx.fillStyle = '#225D31';
         ctx.font = isMobile ? '28px Neulis' : '36px Neulis';
         const gameOverText = 'Game Over';
@@ -659,7 +653,6 @@ function draw() {
         const y = BASE_CANVAS_HEIGHT / 2 - 20;
         ctx.fillText(gameOverText, x, y);
 
-        // Draw secondary text with specified styling
         ctx.fillStyle = '#225D31';
         ctx.font = isMobile ? '500 18px Quicksand' : '500 18px Quicksand';
         const secondaryText = isMobile ? 'tap to play again!' : 'hit the space bar to play again!';
@@ -667,13 +660,11 @@ function draw() {
         const secondaryX = (BASE_CANVAS_WIDTH - secondaryMetrics.width) / 2;
         ctx.fillText(secondaryText, secondaryX, y + 40);
 
-        // Hide pause button and show pick ride button and play button
         document.getElementById('pauseButton').style.visibility = 'hidden';
         document.querySelector('.pick-ride-button').style.display = 'block';
         document.getElementById('playButton').style.display = 'block';
         document.getElementById('playButton').textContent = 'Play Again';
     } else {
-        // Show pause button and hide pick ride button and play button when game is not over
         document.getElementById('pauseButton').style.visibility = 'visible';
         document.querySelector('.pick-ride-button').style.display = 'none';
         document.getElementById('playButton').style.display = 'none';
@@ -681,11 +672,9 @@ function draw() {
 
     // Draw pause screen
     if (isPaused && !gameOver) {
-        // Add semi-transparent overlay
         ctx.fillStyle = 'rgba(142, 212, 160, 0.7)';
         ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
         
-        // Draw pause text
         ctx.fillStyle = '#225D31';
         ctx.font = '36px Neulis';
         const pauseText = 'Paused';
@@ -694,7 +683,6 @@ function draw() {
         const y = BASE_CANVAS_HEIGHT / 2 - 20;
         ctx.fillText(pauseText, x, y);
 
-        // Draw secondary text with specified styling
         ctx.fillStyle = '#225D31';
         ctx.font = '500 18px Quicksand';
         const secondaryText = 'press P to resume';
@@ -706,7 +694,7 @@ function draw() {
 
 function resetGame() {
     player.y = BASE_CANVAS_HEIGHT / 2;
-    player.x = window.innerWidth <= 768 ? 300 : 150; // Reset to correct position based on device
+    player.x = window.innerWidth <= 768 ? 270 : 35; // Match the initial position from player object
     player.velocityY = 0;
     obstacles = [];
     score = 0;
@@ -720,7 +708,9 @@ function resetGame() {
     const pauseButton = document.getElementById('pauseButton');
     pauseButton.style.visibility = 'visible';
     pauseButton.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
+            <title>Pause icon</title>
+            <desc>Two vertical bars representing pause</desc>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M9 0.75C4.44365 0.75 0.75 4.44365 0.75 9C0.75 13.5563 4.44365 17.25 9 17.25C13.5563 17.25 17.25 13.5563 17.25 9C17.25 4.44365 13.5563 0.75 9 0.75ZM7.875 6.75C7.875 6.33579 7.53921 6 7.125 6C6.71079 6 6.375 6.33579 6.375 6.75V11.25C6.375 11.6642 6.71079 12 7.125 12C7.53921 12 7.875 11.6642 7.875 11.25V6.75ZM11.625 6.75C11.625 6.33579 11.2892 6 10.875 6C10.4608 6 10.125 6.33579 10.125 6.75V11.25C10.125 11.6642 10.4608 12 10.875 12C11.2892 12 11.625 11.6642 11.625 11.25V6.75Z" fill="white"/>
         </svg>`;
     
