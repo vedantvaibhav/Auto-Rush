@@ -134,9 +134,15 @@ const ctx = canvas.getContext('2d', { alpha: false });
 const touchArea = document.getElementById('touchArea');
 const pauseButton = document.getElementById('pauseButton');
 
+// Create off-screen canvas for double buffering
+const offscreenCanvas = document.createElement('canvas');
+const offscreenCtx = offscreenCanvas.getContext('2d', { alpha: false });
+
 // Enable image smoothing
 ctx.imageSmoothingEnabled = true;
 ctx.imageSmoothingQuality = 'high';
+offscreenCtx.imageSmoothingEnabled = true;
+offscreenCtx.imageSmoothingQuality = 'high';
 
 // Set initial canvas size
 function resizeCanvas() {
@@ -160,6 +166,10 @@ function resizeCanvas() {
     canvas.width = BASE_CANVAS_WIDTH * 2;  // Double the resolution
     canvas.height = BASE_CANVAS_HEIGHT * 2;
     
+    // Set offscreen canvas size to match
+    offscreenCanvas.width = BASE_CANVAS_WIDTH * 2;
+    offscreenCanvas.height = BASE_CANVAS_HEIGHT * 2;
+    
     // Set canvas display size to exactly match BASE_CANVAS_WIDTH
     canvas.style.width = `${BASE_CANVAS_WIDTH}px`;
     canvas.style.height = `${BASE_CANVAS_HEIGHT}px`;
@@ -174,9 +184,14 @@ function resizeCanvas() {
     ctx.resetTransform();  // Reset any previous transforms
     ctx.scale(2, 2);
     
+    offscreenCtx.resetTransform();
+    offscreenCtx.scale(2, 2);
+    
     // Reset image smoothing after resize
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
+    offscreenCtx.imageSmoothingEnabled = true;
+    offscreenCtx.imageSmoothingQuality = 'high';
 }
 
 // Event listeners
@@ -542,123 +557,127 @@ function update() {
 }
 
 function draw() {
-    // Clear canvas with a single fill operation
-    ctx.fillStyle = '#8ED4A0';
-    ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
+    // Clear offscreen canvas
+    offscreenCtx.fillStyle = '#8ED4A0';
+    offscreenCtx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
 
-    // Save the context state before any transformations
-    ctx.save();
+    // Save the offscreen context state
+    offscreenCtx.save();
     
     // Enable image smoothing for better quality
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    offscreenCtx.imageSmoothingEnabled = true;
+    offscreenCtx.imageSmoothingQuality = 'high';
 
     // Draw start screen
     if (showStartScreen) {
         // Add semi-transparent overlay
-        ctx.fillStyle = 'rgba(142, 212, 160, 0.7)';
-        ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
+        offscreenCtx.fillStyle = 'rgba(142, 212, 160, 0.7)';
+        offscreenCtx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
         
         // Draw start text
-        ctx.fillStyle = '#225D31';
-        ctx.font = '36px Neulis';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = '36px Neulis';
         const startText = 'Auto Rush';
-        const textMetrics = ctx.measureText(startText);
+        const textMetrics = offscreenCtx.measureText(startText);
         const x = (BASE_CANVAS_WIDTH - textMetrics.width) / 2;
         const y = BASE_CANVAS_HEIGHT / 2 - 20;
-        ctx.fillText(startText, x, y);
+        offscreenCtx.fillText(startText, x, y);
 
         // Draw secondary text
-        ctx.fillStyle = '#225D31';
-        ctx.font = '500 18px Quicksand';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = '500 18px Quicksand';
         const secondaryText = window.innerWidth <= 768 ? 'tap to play' : 'press space to start';
-        const secondaryMetrics = ctx.measureText(secondaryText);
+        const secondaryMetrics = offscreenCtx.measureText(secondaryText);
         const secondaryX = (BASE_CANVAS_WIDTH - secondaryMetrics.width) / 2;
-        ctx.fillText(secondaryText, secondaryX, y + 40);
+        offscreenCtx.fillText(secondaryText, secondaryX, y + 40);
 
         // Show pick ride button and hide pause button
         document.querySelector('.pick-ride-button').style.display = 'block';
         document.getElementById('pauseButton').style.visibility = 'hidden';
-        ctx.restore();
+        offscreenCtx.restore();
+        
+        // Copy offscreen canvas to main canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(offscreenCanvas, 0, 0);
         return;
     }
 
     // Apply viewport offset for all game elements
-    ctx.translate(-viewportOffset.x, -viewportOffset.y);
+    offscreenCtx.translate(-viewportOffset.x, -viewportOffset.y);
 
     // Draw particles
     particles.forEach(particle => {
-        particle.draw(ctx);
+        particle.draw(offscreenCtx);
     });
 
     // Draw player with rotation and error handling
     if (vehicleImg.complete && vehicleImg.naturalWidth !== 0) {
-        ctx.save();
-        ctx.translate(player.x + player.width/2, player.y + player.height/2);
-        ctx.rotate(player.rotation * Math.PI / 180);
+        offscreenCtx.save();
+        offscreenCtx.translate(player.x + player.width/2, player.y + player.height/2);
+        offscreenCtx.rotate(player.rotation * Math.PI / 180);
         
         // Calculate drawing dimensions based on vehicle type
         const vehicleDimensions = VEHICLE_DIMENSIONS[selectedVehicle];
-        ctx.drawImage(
+        offscreenCtx.drawImage(
             vehicleImg,
             -vehicleDimensions.width/2,
             -vehicleDimensions.height/2,
             vehicleDimensions.width,
             vehicleDimensions.height
         );
-        ctx.restore();
+        offscreenCtx.restore();
     } else {
-        ctx.save();
-        ctx.fillStyle = '#225D31';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-        ctx.restore();
+        offscreenCtx.save();
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.fillRect(player.x, player.y, player.width, player.height);
+        offscreenCtx.restore();
     }
 
     // Draw obstacles with error handling
     obstacles.forEach(obstacle => {
         const img = obstacleImages[obstacle.imageIndex];
         if (img && img.complete && img.naturalWidth !== 0) {
-            ctx.drawImage(img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            offscreenCtx.drawImage(img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         } else {
-            ctx.fillStyle = '#225D31';
-            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            offscreenCtx.fillStyle = '#225D31';
+            offscreenCtx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         }
     });
 
-    // Restore the context state after drawing all game elements
-    ctx.restore();
+    // Restore the offscreen context state
+    offscreenCtx.restore();
 
     // Draw UI elements (score, game over, pause screen)
     const isMobile = window.innerWidth <= 768;
-    ctx.font = '500 14px Quicksand';
-    ctx.fillStyle = '#225D31';
+    offscreenCtx.font = '500 14px Quicksand';
+    offscreenCtx.fillStyle = '#225D31';
     
     // Center score on mobile, keep original position on desktop
     const scoreText = `Score: ${score}`;
-    const scoreMetrics = ctx.measureText(scoreText);
+    const scoreMetrics = offscreenCtx.measureText(scoreText);
     const scoreX = isMobile ? (BASE_CANVAS_WIDTH - scoreMetrics.width) / 2 : 20;
     const scoreY = 24;
-    ctx.fillText(scoreText, scoreX, scoreY);
+    offscreenCtx.fillText(scoreText, scoreX, scoreY);
 
     // Draw game over screen
     if (gameOver) {
-        ctx.fillStyle = 'rgba(142, 212, 160, 0.7)';
-        ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
+        offscreenCtx.fillStyle = 'rgba(142, 212, 160, 0.7)';
+        offscreenCtx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
         
-        ctx.fillStyle = '#225D31';
-        ctx.font = isMobile ? '28px Neulis' : '36px Neulis';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = isMobile ? '28px Neulis' : '36px Neulis';
         const gameOverText = 'Game Over';
-        const textMetrics = ctx.measureText(gameOverText);
+        const textMetrics = offscreenCtx.measureText(gameOverText);
         const x = (BASE_CANVAS_WIDTH - textMetrics.width) / 2;
         const y = BASE_CANVAS_HEIGHT / 2 - 20;
-        ctx.fillText(gameOverText, x, y);
+        offscreenCtx.fillText(gameOverText, x, y);
 
-        ctx.fillStyle = '#225D31';
-        ctx.font = isMobile ? '500 18px Quicksand' : '500 18px Quicksand';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = isMobile ? '500 18px Quicksand' : '500 18px Quicksand';
         const secondaryText = isMobile ? 'tap to play again!' : 'hit the space bar to play again!';
-        const secondaryMetrics = ctx.measureText(secondaryText);
+        const secondaryMetrics = offscreenCtx.measureText(secondaryText);
         const secondaryX = (BASE_CANVAS_WIDTH - secondaryMetrics.width) / 2;
-        ctx.fillText(secondaryText, secondaryX, y + 40);
+        offscreenCtx.fillText(secondaryText, secondaryX, y + 40);
 
         document.getElementById('pauseButton').style.visibility = 'hidden';
         document.querySelector('.pick-ride-button').style.display = 'block';
@@ -672,24 +691,28 @@ function draw() {
 
     // Draw pause screen
     if (isPaused && !gameOver) {
-        ctx.fillStyle = 'rgba(142, 212, 160, 0.7)';
-        ctx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
+        offscreenCtx.fillStyle = 'rgba(142, 212, 160, 0.7)';
+        offscreenCtx.fillRect(0, 0, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT);
         
-        ctx.fillStyle = '#225D31';
-        ctx.font = '36px Neulis';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = '36px Neulis';
         const pauseText = 'Paused';
-        const textMetrics = ctx.measureText(pauseText);
+        const textMetrics = offscreenCtx.measureText(pauseText);
         const x = (BASE_CANVAS_WIDTH - textMetrics.width) / 2;
         const y = BASE_CANVAS_HEIGHT / 2 - 20;
-        ctx.fillText(pauseText, x, y);
+        offscreenCtx.fillText(pauseText, x, y);
 
-        ctx.fillStyle = '#225D31';
-        ctx.font = '500 18px Quicksand';
+        offscreenCtx.fillStyle = '#225D31';
+        offscreenCtx.font = '500 18px Quicksand';
         const secondaryText = 'press P to resume';
-        const secondaryMetrics = ctx.measureText(secondaryText);
+        const secondaryMetrics = offscreenCtx.measureText(secondaryText);
         const secondaryX = (BASE_CANVAS_WIDTH - secondaryMetrics.width) / 2;
-        ctx.fillText(secondaryText, secondaryX, y + 40);
+        offscreenCtx.fillText(secondaryText, secondaryX, y + 40);
     }
+
+    // Copy offscreen canvas to main canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(offscreenCanvas, 0, 0);
 }
 
 function resetGame() {
