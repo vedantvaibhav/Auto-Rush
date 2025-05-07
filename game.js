@@ -1,6 +1,6 @@
 // Game constants
-const BASE_CANVAS_WIDTH = 900;
-const BASE_CANVAS_HEIGHT = 500;
+const BASE_CANVAS_WIDTH = 850;
+const BASE_CANVAS_HEIGHT = 450;
 const GRAVITY = 1;                     // Keep current gravity
 const SLIDE_FORCE = -10;                // Keep current upward force
 const BASE_DOWNWARD_SLIDE_FORCE = 0.5;  // Base downward slide force
