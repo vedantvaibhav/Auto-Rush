@@ -1,15 +1,32 @@
 // Game constants
-const BASE_CANVAS_WIDTH = 850;
-const BASE_CANVAS_HEIGHT = 450;
-const GRAVITY = 1;                     // Keep current gravity
-const SLIDE_FORCE = -10;                // Keep current upward force
-const BASE_DOWNWARD_SLIDE_FORCE = 0.5;  // Base downward slide force
-const BASE_OBSTACLE_WIDTH = 60;          // Keep current obstacle width
-const BASE_OBSTACLE_HEIGHT = 70;         // Keep current obstacle height
-const BASE_OBSTACLE_SPEED = 8;           // Reduced base obstacle speed (was 11)
-const BASE_OBSTACLE_GAP = 350;           // Base gap between obstacles
-const BASE_MIN_OBSTACLE_DISTANCE = 250;  // Base minimum distance
-const CORNER_PADDING = 40;
+const ORIGINAL_WIDTH = 850;
+const ORIGINAL_HEIGHT = 450;
+const ASPECT_RATIO = ORIGINAL_WIDTH / ORIGINAL_HEIGHT;
+
+// Dynamic canvas dimensions
+let BASE_CANVAS_WIDTH = window.innerWidth;
+let BASE_CANVAS_HEIGHT = window.innerWidth / ASPECT_RATIO;
+
+// Scale factor to convert from original dimensions to new dimensions
+let SCALE_FACTOR = BASE_CANVAS_WIDTH / ORIGINAL_WIDTH;
+
+// Update dimensions on window resize
+window.addEventListener('resize', () => {
+    BASE_CANVAS_WIDTH = window.innerWidth;
+    BASE_CANVAS_HEIGHT = window.innerWidth / ASPECT_RATIO;
+    SCALE_FACTOR = BASE_CANVAS_WIDTH / ORIGINAL_WIDTH;
+    resizeCanvas();
+});
+
+const GRAVITY = 1 * SCALE_FACTOR;                     // Scale gravity
+const SLIDE_FORCE = -10 * SCALE_FACTOR;              // Scale slide force
+const BASE_DOWNWARD_SLIDE_FORCE = 0.5 * SCALE_FACTOR; // Scale downward force
+const BASE_OBSTACLE_WIDTH = 60 * SCALE_FACTOR;        // Scale obstacle width
+const BASE_OBSTACLE_HEIGHT = 70 * SCALE_FACTOR;       // Scale obstacle height
+const BASE_OBSTACLE_SPEED = 8 * SCALE_FACTOR;         // Scale obstacle speed
+const BASE_OBSTACLE_GAP = 350 * SCALE_FACTOR;         // Scale obstacle gap
+const BASE_MIN_OBSTACLE_DISTANCE = 250 * SCALE_FACTOR; // Scale minimum distance
+const CORNER_PADDING = 40 * SCALE_FACTOR;             // Scale corner padding
 const MAX_PARTICLES = 150;
 const PARTICLE_LIFETIME = 40;
 const SMOOTH_ACCELERATION = 0.45;        // Keep current acceleration
@@ -29,16 +46,16 @@ const TREE_GENERATION_INTERVAL = 10;    // Keep current tree generation interval
 const MAX_SPEED_MULTIPLIER = 2.0;        // Maximum speed multiplier
 const MAX_DIFFICULTY_MULTIPLIER = 2.0;   // Maximum difficulty multiplier
 
-// Vehicle-specific dimensions
+// Vehicle-specific dimensions (scaled)
 const VEHICLE_DIMENSIONS = {
-    'Auto 1': { width: 90 * 0.75, height: 60 * 0.75 },      // Classic Auto
-    'Vehicle01': { width: 118 * 0.75, height: 53 * 0.75 },  // SUV
-    'Vehicle02': { width: 112 * 0.75, height: 36 * 0.75 },  // Sedan
-    'Vehicle09': { width: 119 * 0.75, height: 38 * 0.75 },  // Race Car
-    'Vehicle06': { width: 114 * 0.75, height: 37 * 0.75 },  // Sports Car
-    'Vehicle05': { width: 112 * 0.75, height: 51 * 0.75 },  // Truck
-    'Vehicle12': { width: 113 * 0.75, height: 64 * 0.75 },  // Bus
-    'Vehicle13': { width: 143 * 0.75, height: 63 * 0.75 }   // Vintage Car
+    'Auto 1': { width: 90 * 0.75 * SCALE_FACTOR, height: 60 * 0.75 * SCALE_FACTOR },      // Classic Auto
+    'Vehicle01': { width: 118 * 0.75 * SCALE_FACTOR, height: 53 * 0.75 * SCALE_FACTOR },  // SUV
+    'Vehicle02': { width: 112 * 0.75 * SCALE_FACTOR, height: 36 * 0.75 * SCALE_FACTOR },  // Sedan
+    'Vehicle09': { width: 119 * 0.75 * SCALE_FACTOR, height: 38 * 0.75 * SCALE_FACTOR },  // Race Car
+    'Vehicle06': { width: 114 * 0.75 * SCALE_FACTOR, height: 37 * 0.75 * SCALE_FACTOR },  // Sports Car
+    'Vehicle05': { width: 112 * 0.75 * SCALE_FACTOR, height: 51 * 0.75 * SCALE_FACTOR },  // Truck
+    'Vehicle12': { width: 113 * 0.75 * SCALE_FACTOR, height: 64 * 0.75 * SCALE_FACTOR },  // Bus
+    'Vehicle13': { width: 143 * 0.75 * SCALE_FACTOR, height: 63 * 0.75 * SCALE_FACTOR }   // Vintage Car
 };
 
 // Check URL parameters for start flag
@@ -157,20 +174,10 @@ function resizeCanvas() {
     const containerHeight = container.clientHeight;
     const isMobile = window.innerWidth <= 768;
     
-    // Calculate the scale that maintains aspect ratio
-    const scaleX = containerWidth / BASE_CANVAS_WIDTH;
-    const scaleY = containerHeight / BASE_CANVAS_HEIGHT;
-    
-    // For mobile, use a smaller scale to make assets smaller
-    if (isMobile) {
-        scale = Math.min(scaleX, scaleY) * 0.75; // 25% smaller on mobile
-    } else {
-        scale = Math.min(scaleX, scaleY);
-    }
-    
-    // Calculate the new canvas dimensions that maintain aspect ratio
-    const newWidth = BASE_CANVAS_WIDTH * scale;
-    const newHeight = BASE_CANVAS_HEIGHT * scale;
+    // Update base dimensions
+    BASE_CANVAS_WIDTH = window.innerWidth;
+    BASE_CANVAS_HEIGHT = window.innerWidth / ASPECT_RATIO;
+    SCALE_FACTOR = BASE_CANVAS_WIDTH / ORIGINAL_WIDTH;
     
     // Set canvas size to match container but with higher resolution for sharper rendering
     canvas.width = BASE_CANVAS_WIDTH * 2;  // Double the resolution
@@ -195,7 +202,13 @@ function resizeCanvas() {
     ctx.imageSmoothingQuality = 'high';
 
     // Debug log
-    console.log('[DEBUG] Canvas resized:', {width: canvas.width, height: canvas.height, scale});
+    console.log('[DEBUG] Canvas resized:', {
+        width: canvas.width, 
+        height: canvas.height, 
+        scale: SCALE_FACTOR,
+        baseWidth: BASE_CANVAS_WIDTH,
+        baseHeight: BASE_CANVAS_HEIGHT
+    });
 }
 
 // Event listeners
