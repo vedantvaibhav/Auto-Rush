@@ -294,19 +294,7 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Add window blur handler to prevent stuck controls
-window.addEventListener('blur', () => {
-    player.isSliding = false;
-});
-
-// Update pause button listener (click only)
-pauseButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!gameOver) { // Only allow pause when game is not over
-        togglePause();
-    }
-});
-
-pauseButton.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', (e) => {
     console.log(e.code);
     console.log("ekey" , e.key);
     // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
@@ -336,7 +324,7 @@ pauseButton.addEventListener('keydown', (e) => {
     }
 });
 
-pauseButton.addEventListener('keyup', (e) => {
+window.addEventListener('keyup', (e) => {
     // Handle spacebar release (both 'Space' and 'Spacebar' key codes)
     if (e.code === 'Space' || e.code === 'Spacebar') {
         e.preventDefault();
@@ -344,6 +332,18 @@ pauseButton.addEventListener('keyup', (e) => {
         player.isSliding = false;
     }
 });
+
+window.addEventListener
+
+// Update pause button listener (click only)
+pauseButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!gameOver) { // Only allow pause when game is not over
+        togglePause();
+    }
+});
+
+
 
 // Add Play button listener
 document.getElementById('playButton').addEventListener('click', () => {
