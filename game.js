@@ -74,6 +74,7 @@ if (!selectedVehicle || !validVehicles.some(v => v.id === selectedVehicle && v.u
 }
 
 // Update personal best display
+
 document.getElementById('personalBest').textContent = personalBest;
 
 // Create vehicle image with error handling
