@@ -306,6 +306,45 @@ pauseButton.addEventListener('click', (e) => {
     }
 });
 
+pauseButton.addEventListener('keydown', (e) => {
+    console.log(e.code);
+    console.log("ekey" , e.key);
+    // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
+        console.log("ekey call" , e.key);
+        e.preventDefault();
+        e.stopPropagation();
+
+        console.log("ekey call" , e.key , startGame , gameOver);
+        
+        // Handle different game states
+        if (showStartScreen) {
+            startGame();
+            return;
+        }
+        if (!gameOver && !isPaused) {
+            player.isSliding = true;
+        }
+        if (gameOver) {
+            resetGame();
+        }
+    }
+    // Use P key exclusively for pause
+    if (e.code === 'KeyP') {
+        e.preventDefault();
+        togglePause();
+    }
+});
+
+pauseButton.addEventListener('keyup', (e) => {
+    // Handle spacebar release (both 'Space' and 'Spacebar' key codes)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
+        e.preventDefault();
+        e.stopPropagation();
+        player.isSliding = false;
+    }
+});
+
 // Add Play button listener
 document.getElementById('playButton').addEventListener('click', () => {
     if (showStartScreen) {
