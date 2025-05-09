@@ -253,9 +253,12 @@ document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
 
 // Add keyboard controls for desktop
 document.addEventListener('keydown', (e) => {
-    // Prevent default space bar behavior
-    if (e.code === 'Space') {
+    // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
         e.preventDefault();
+        e.stopPropagation();
+        
+        // Handle different game states
         if (showStartScreen) {
             startGame();
             return;
@@ -275,10 +278,17 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keyup', (e) => {
-    if (e.code === 'Space') {
+    // Handle spacebar release (both 'Space' and 'Spacebar' key codes)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
         e.preventDefault();
+        e.stopPropagation();
         player.isSliding = false;
     }
+});
+
+// Add window blur handler to prevent stuck controls
+window.addEventListener('blur', () => {
+    player.isSliding = false;
 });
 
 // Update pause button listener (click only)
