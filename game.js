@@ -254,10 +254,15 @@ document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
 
 // Add keyboard controls for desktop
 document.addEventListener('keydown', (e) => {
+    console.log(e.code);
+    console.log("ekey" , e.key);
     // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
     if (e.code === 'Space' || e.code === 'Spacebar') {
+        console.log("ekey call" , e.key);
         e.preventDefault();
         e.stopPropagation();
+
+        console.log("ekey call" , e.key , startGame , gameOver);
         
         // Handle different game states
         if (showStartScreen) {
