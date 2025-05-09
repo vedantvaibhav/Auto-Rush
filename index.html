@@ -380,6 +380,28 @@
                 font-size: 14px;
             }
         }
+
+        /* Hide elements for very small screens */
+        @media screen and (max-width: 540px) {
+            .mobile-wrapper {
+                display: none !important;
+            }
+            #gameContainer {
+                display: none !important;
+            }
+            .game-controls {
+                display: none !important;
+            }
+            .title {
+                display: none !important;
+            }
+            .subtitle {
+                display: none !important;
+            }
+            #toast {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>

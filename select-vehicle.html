@@ -244,6 +244,25 @@
                 min-width: 80px;
             }
         }
+
+        /* Hide elements for very small screens */
+        @media screen and (max-width: 540px) {
+            .selection-container {
+                display: none !important;
+            }
+            .title {
+                display: none !important;
+            }
+            .subtitle {
+                display: none !important;
+            }
+            .button-container {
+                display: none !important;
+            }
+            .vehicles-grid {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
