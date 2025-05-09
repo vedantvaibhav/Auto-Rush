@@ -149,6 +149,7 @@ const pauseButton = document.getElementById('pauseButton');
 
 // Enable image smoothing
 ctx.imageSmoothingEnabled = true;
+
 ctx.imageSmoothingQuality = 'high';
 
 // Set initial canvas size
