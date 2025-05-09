@@ -253,7 +253,35 @@ document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 // Add keyboard controls for desktop
+document.addEventListener('keydown', (e) => {
+    console.log(e.code);
+    console.log("ekey" , e.key);
+    // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
+        console.log("ekey call" , e.key);
+        e.preventDefault();
+        e.stopPropagation();
 
+        console.log("ekey call" , e.key , startGame , gameOver);
+        
+        // Handle different game states
+        if (showStartScreen) {
+            startGame();
+            return;
+        }
+        if (!gameOver && !isPaused) {
+            player.isSliding = true;
+        }
+        if (gameOver) {
+            resetGame();
+        }
+    }
+    // Use P key exclusively for pause
+    if (e.code === 'KeyP') {
+        e.preventDefault();
+        togglePause();
+    }
+});
 
 document.addEventListener('keyup', (e) => {
     // Handle spacebar release (both 'Space' and 'Spacebar' key codes)
@@ -747,36 +775,6 @@ function startGame() {
     // Hide pick ride button and play button when game starts
     document.querySelector('.pick-ride-button').style.display = 'none';
     document.getElementById('playButton').style.display = 'none';
-
-    document.addEventListener('keydown', (e) => {
-        console.log(e.code);
-        console.log("ekey" , e.key);
-        // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
-        if (e.code === 'Space' || e.code === 'Spacebar') {
-            console.log("ekey call" , e.key);
-            e.preventDefault();
-            e.stopPropagation();
-    
-            console.log("ekey call" , e.key , startGame , gameOver);
-            
-            // Handle different game states
-            if (showStartScreen) {
-                startGame();
-                return;
-            }
-            if (!gameOver && !isPaused) {
-                player.isSliding = true;
-            }
-            if (gameOver) {
-                resetGame();
-            }
-        }
-        // Use P key exclusively for pause
-        if (e.code === 'KeyP') {
-            e.preventDefault();
-            togglePause();
-        }
-    });
 }
 
 // Game loop
