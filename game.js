@@ -230,12 +230,39 @@ touchArea.addEventListener('touchstart', handleTouchStart, { passive: false });
 touchArea.addEventListener('touchend', handleTouchEnd, { passive: false });
 touchArea.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
+// Add click/tap listeners for non-touch devices and better responsiveness
+touchArea.addEventListener('mousedown', (e) => {
+    // Only handle mouse events if not a touch device
+    if (!('ontouchstart' in window)) {
+        handleTouchStart(e);
+    }
+});
+
+touchArea.addEventListener('mouseup', (e) => {
+    // Only handle mouse events if not a touch device
+    if (!('ontouchstart' in window)) {
+        handleTouchEnd(e);
+    }
+});
+
+// Prevent default touch behaviors only within game container
+document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
+    if (e.target.id === 'touchArea' || e.target.id === 'gameCanvas') {
+        e.preventDefault();
+    }
+}, { passive: false });
+
 // Add keyboard controls for desktop
 document.addEventListener('keydown', (e) => {
+    console.log(e.code);
+    console.log("ekey" , e.key);
     // Handle spacebar (both 'Space' and 'Spacebar' key codes for cross-platform compatibility)
     if (e.code === 'Space' || e.code === 'Spacebar') {
+        console.log("ekey call" , e.key);
         e.preventDefault();
         e.stopPropagation();
+
+        console.log("ekey call" , e.key , startGame , gameOver);
         
         // Handle different game states
         if (showStartScreen) {
@@ -256,43 +283,14 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Add click/tap listeners for non-touch devices and better responsiveness
-touchArea.addEventListener('mousedown', (e) => {
-    // Only handle mouse events if not a touch device
-    if (!('ontouchstart' in window)) {
+document.addEventListener('keyup', (e) => {
+    // Handle spacebar release (both 'Space' and 'Spacebar' key codes)
+    if (e.code === 'Space' || e.code === 'Spacebar') {
         e.preventDefault();
-        handleTouchStart(e);
+        e.stopPropagation();
+        player.isSliding = false;
     }
 });
-
-touchArea.addEventListener('mouseup', (e) => {
-    // Only handle mouse events if not a touch device
-    if (!('ontouchstart' in window)) {
-        e.preventDefault();
-        handleTouchEnd(e);
-    }
-});
-
-// Add focus event listener to ensure iframe can receive keyboard events
-window.addEventListener('focus', () => {
-    // Focus the game container to ensure it can receive keyboard events
-    document.getElementById('gameContainer').focus();
-});
-
-// Add click event listener to game container to ensure it gets focus
-document.getElementById('gameContainer').addEventListener('click', () => {
-    document.getElementById('gameContainer').focus();
-});
-
-// Make game container focusable
-document.getElementById('gameContainer').setAttribute('tabindex', '0');
-
-// Prevent default touch behaviors only within game container
-document.getElementById('gameContainer').addEventListener('touchmove', (e) => {
-    if (e.target.id === 'touchArea' || e.target.id === 'gameCanvas') {
-        e.preventDefault();
-    }
-}, { passive: false });
 
 // Add window blur handler to prevent stuck controls
 window.addEventListener('blur', () => {
